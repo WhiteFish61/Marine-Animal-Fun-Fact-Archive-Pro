@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动物世界卡片展示</title>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* ———— 全屏视频区域 ———— */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .hero-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* 顶部导航条：左边LOGO + 右边关于作者 */
+        .hero-top-nav {
+            position: relative;
+            z-index: 3;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between; /* 左右分开 */
+            align-items: center;
+        }
+
+        /* ———— 左上角 LOGO ———— */
+        .hero-logo {
+            height: 55px;
+            width: auto;
+            cursor: pointer;
+        }
+
+        /* 关于作者 按钮样式（顶部浅色） */
+        .author-btn-top {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-size: 15px;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: 0.3s;
+        }
+        .author-btn-top:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        /* 视频中央内容 */
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 0 20px;
+        }
+
+        /* 大标题 */
+        .hero-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            margin-bottom: 18px;
+            text-align: center;
+            line-height: 0.92;
+            text-shadow: 0 0 12px rgba(0,0,0,0.45);
+        }
+
+        .hero-title span {
+            display: block;
+            font-size: 160px;
+            font-weight: 900;
+            letter-spacing: -1px;
+
+            /* 文字半透明 */
+            color: rgba(255,255,255,0.55);
+
+            /* 玻璃边缘感 */
+            -webkit-text-stroke: 5px rgba(255,255,255,0.35);
+
+            /* 轻微光感 */
+            text-shadow:
+            0 0 8px rgba(255,255,255,0.15),
+            0 0 18px rgba(0,0,0,0.25);
+        }
+
+        /* 副标题 / 描述文字 */
+        .hero-desc {
+            font-size: 20px;
+            max-width: 700px;
+            line-height: 1.6;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 16px 30px;
+            border-radius: 12px;
+            text-shadow: 0 1px 4px #000;
+        }
+
+        /* ———— 视频底部提示文字：往下翻看更多内容 ———— */
+        .scroll-tip {
+            position: absolute;
+            z-index: 2;
+            left: 0; right: 0; bottom: 25px;
+            text-align: center;
+            color: #fff;
+            font-size: 16px;
+            text-shadow: 0 1px 3px #000;
+            opacity: 0.9;
+            transition: opacity 0.6s ease;
+        }
+
+        /* ———— 第一层背景（顶部显示） ———— */
+        .bg-top-video {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            object-fit: cover;
+            transition: opacity 1.2s ease;
+        }
+
+        /* ———— 第二层背景（底部显示） ———— */
+        .bg-bottom-video {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            object-fit: cover;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ———— 页面内容 ———— */
+        .page-content {
+            position: relative;
+            z-index: 9;
+            padding-top: 20px;
+            min-height: 90vh;
+        }
+
+        /* 隐藏旧的按钮和标题 */
+        .author-btn {
+            display: none;
+        }
+
+        /* ———— 搜索上方渐变标题 ———— */
+        .top-fade-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #222;
+            margin: 10px 0 10px;
+            opacity: 0; /* 默认隐藏 */
+            transition: opacity 1s ease;
+        }
+
+        /* 搜索 + Filter 组合容器 */
+        .search-filter-wrapper {
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .search-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+        }
+        .search-input {
+            flex: 1;
+            height: 40px;
+            padding: 0 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+            font-size: 14px;
+            background: rgba(255,255,255,0.9);
+        }
+        .search-input:focus {
+            border-color: #5390ce;
+        }
+        .search-btn {
+            height: 40px;
+            width: 80px;
+            background: #5390ce;
+            color: #fff;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .search-btn:hover {
+            background: #5390ce;
+        }
+
+        .filter-btn {
+            height: 40px;
+            padding: 0 18px;
+            background: #256bb1;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .filter-btn:hover {
+            background: #256bb1;
+        }
+
+        /* 卡片容器 —— ✅ 核心：固定高度 + 内部滚动 */
+        .visc-posts-list {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 20px;
+            height: calc(70vh); /* 固定高度 */
+            overflow-y: auto; /* 只有这里可以滚动 */
+            scrollbar-width: thin;
+            /* ✅ 隐藏滚动条，但保留滑动功能 */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+        /* ✅ 专门隐藏滚动条 */
+        .visc-posts-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* 动物卡片 */
+        .creature-card {
+            width: 270px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .creature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .media-container {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            cursor: pointer;
+        }
+        .creature-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .creature-video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .media-container:hover .creature-img { opacity: 0; }
+        .media-container:hover .creature-video { opacity: 1; pointer-events: auto; }
+
+        .creature-content { padding: 15px; }
+        .creature-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .creature-desc { font-size: 14px; color: #666; line-height: 1.5; }
+
+        /* 移动端 */
+        @media (max-width: 768px) {
+            .hero-title span { font-size: 48px; }
+            .hero-desc { font-size: 16px; padding: 12px 20px; }
+            .hero-top-nav { padding: 20px; }
+            .search-filter-wrapper { flex-direction: column; }
+            .search-container, .filter-btn { width: 100%; }
+            .creature-card { width: 90%; }
+            .top-fade-title { font-size: 24px; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部背景 -->
+    <video class="bg-top-video" autoplay muted loop playsinline>
+        <source src="img/A bunch of jellyfish_small.mp4" type="video/mp4">
+    </video>
+
+    <!-- 底部背景 -->
+    <video class="bg-bottom-video" autoplay muted loop playsinline>
+        <source src="img/under the sea_small.mp4" type="video/mp4">
+    </video>
+
+    <!-- ———————————————————————————————————— -->
+    <!-- ✅ 上半部分：视频 + 标题 + 文字 + 关于作者 —————————— -->
+    <!-- ———————————————————————————————————— -->
+    <div class="hero-section">
+        <video class="hero-video" muted loop autoplay playsinline>
+            <source src="F:\Wsworkspace\solana\solana-project\whitefish\mda-rhv5se71u4r7uqnb.mp4" type="video/mp4">
+        </video>
+
+        <!-- 顶部：左边LOGO + 右边关于作者 按钮 -->
+        <div class="hero-top-nav">
+            <img src="img/marine animal logo.png" class="hero-logo" alt="LOGO">
+            <button class="author-btn-top" onclick="showAuthor()">About The Designer</button>
+        </div>
+
+        <!-- 视频中央：标题 + 介绍文字 -->
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span>Marine Animal</span>
+                <span>Fun Fact Archive</span>
+            </h1>
+            <p class="hero-desc">
+                Explore the untold secrets of the amazing creatures of the deep sea. This archives brings together a variety of rare and beautiful animals, and through interactive animal cards, it will take you into a different world of knowledge and curiosity.
+            </p>
+        </div>
+
+        <!-- ✅ 视频最底部：往下翻看更多内容 -->
+        <div class="scroll-tip">Slide down and discover interesting facts about marine animals</div>
+    </div>
+
+    <!-- ———————————————————————————————————— -->
+    <!-- ✅ 下半部分：固定高度 + 卡片内部滚动 —————————— -->
+    <!-- ———————————————————————————————————— -->
+    <div class="page-content">
+        <button class="author-btn" onclick="showAuthor()">关于作者</button>
+
+        <!-- ✅ 搜索栏上方：渐变出现的标题 -->
+        <h2 class="top-fade-title">Marine Animal Fun Fact Archive</h2>
+
+        <!-- 搜索栏（永远固定） -->
+        <div class="search-filter-wrapper">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search for animal names..." id="searchInput">
+                <button class="search-btn" onclick="handleSearch()">Search</button>
+            </div>
+            <button class="filter-btn" onclick="openFilter()">Filter</button>
+        </div>
+
+        <!-- ✅ 卡片区域：只有这里能滚动 -->
+        <div class="visc-posts-list">
+            <div class="row">
+                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="img/Screenshot Dark jellyfish.png" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="img/Dark jellyfish_medium.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">Dark jellyfish</h3>
+                        <p class="creature-desc">大型猫科动物，毛色浅黄或棕黄色，满身黑色横纹。</p>
+                    </div>
+                </div>
+
+                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="img/Screenshot Flame Octopus.png" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="img/Flame Octopus_small.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">Flame Octopus</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="img/Screenshot Anemone crab.png" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="img/Anemone crab_medium.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">Anemone crab</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="img/Screenshot Stonefish.png" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="img/Stonefish_medium.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">Stonefish</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="img/Screenshot Red striped fish.png" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="img/Red striped fish_medium.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">Red striped fish</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="img/Screenshot Patterned Octopus.png" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="img/Patterned Octopus_small.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">Patterned Octopus</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="img/Screenshot striped fish.png" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="img/striped fish_small.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">striped fish</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="img/Screenshot big eye fish.png" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="img/big eye fish_medium.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">big eye fish</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="https://picsum.photos/270/180?random=2" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="你的视频.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">熊猫</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="https://picsum.photos/270/180?random=2" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="你的视频.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">熊猫</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="https://picsum.photos/270/180?random=2" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="你的视频.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">熊猫</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="https://picsum.photos/270/180?random=2" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="你的视频.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">熊猫</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="https://picsum.photos/270/180?random=2" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="你的视频.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">熊猫</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="https://picsum.photos/270/180?random=2" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="你的视频.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">熊猫</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="https://picsum.photos/270/180?random=2" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="你的视频.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">熊猫</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                                <div class="creature-card">
+                    <div class="media-container" onmouseenter="playVideo(this)" onmouseleave="pauseVideo(this)">
+                        <img src="https://picsum.photos/270/180?random=2" class="creature-img">
+                        <video class="creature-video" muted loop>
+                            <source src="你的视频.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="creature-content">
+                        <h3 class="creature-title">熊猫</h3>
+                        <p class="creature-desc">中国特有物种，体色为黑白两色，爱吃竹子。</p>
+                    </div>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 卡片视频播放
+        function playVideo(container) {
+            const v = container.querySelector('.creature-video');
+            if(v) v.play().catch(()=>{});
+        }
+        function pauseVideo(container) {
+            const v = container.querySelector('.creature-video');
+            if(v) v.pause();
+        }
+
+        // 搜索
+        function handleSearch() {
+            const kw = document.getElementById('searchInput').value.trim().toLowerCase();
+            const cards = document.querySelectorAll('.creature-card');
+            if(!kw){ cards.forEach(c=>c.style.display='block'); alert('请输入内容'); return; }
+            let found = false;
+            cards.forEach(c => {
+                const t = c.querySelector('.creature-title').textContent.toLowerCase();
+                if(t.includes(kw)){ c.style.display='block'; found=true; }
+                else c.style.display='none';
+            })
+            if(!found) alert('未找到');
+        }
+
+        // 关于作者
+        function showAuthor() { alert('作者：你的名字\n动物卡片展示系统'); }
+
+        // Filter
+        function openFilter() { alert('Filter 筛选功能'); }
+
+        // 回车搜索
+        document.getElementById('searchInput').addEventListener('keydown', e=>{
+            if(e.key === 'Enter') handleSearch();
+        })
+
+        // ————————————————————————————————
+        // ✅ 文字 + 双背景 + 顶部标题 完全同步渐变
+        // ————————————————————————————————
+        const tip = document.querySelector('.scroll-tip');
+        const bgLayer = document.querySelector('.bg-top-video');
+        const fadeTitle = document.querySelector('.top-fade-title');
+        const maxFade = 400;
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+
+            // 1. 提示文字渐变 —— 消失更快
+            let opacity = 1 - (scrollTop / 180);
+            opacity = Math.max(0, opacity);
+            tip.style.opacity = opacity;
+
+            // 2. 背景渐变
+            bgLayer.style.opacity = Math.max(0, 1 - scrollTop / maxFade);
+
+            // 3. 搜索栏上方标题 渐变出现
+            let titleOpacity = (scrollTop - 200) / 200;
+            titleOpacity = Math.max(0, Math.min(1, titleOpacity));
+            fadeTitle.style.opacity = titleOpacity;
+        });
+
+        // ==============================================
+        // ✅ 修复：保留内部滚动，同时让上吸 / 下吸都非常灵敏
+        // ==============================================
+        const postsList = document.querySelector('.visc-posts-list');
+
+        let isSnapping = false;
+        let lastSnapTime = 0;
+
+        function getSnapBottom() {
+            return window.innerHeight;
+        }
+
+        function canSnap() {
+            const now = Date.now();
+            if (isSnapping) return false;
+            if (now - lastSnapTime < 450) return false;
+            return true;
+        }
+
+        function snapTo(target) {
+            if (!canSnap()) return;
+            isSnapping = true;
+            lastSnapTime = Date.now();
+
+            window.scrollTo({
+                top: target,
+                behavior: 'smooth'
+            });
+
+            setTimeout(() => {
+                isSnapping = false;
+            }, 500);
+        }
+
+        function isAtTopSection() {
+            return window.scrollY < 80;
+        }
+
+        function isAtBottomSection() {
+            return Math.abs(window.scrollY - getSnapBottom()) < 120;
+        }
+
+        // 顶部区域：轻轻往下滑，直接吸到底部
+        window.addEventListener('wheel', (e) => {
+            if (e.deltaY > 8 && isAtTopSection()) {
+                e.preventDefault();
+                snapTo(getSnapBottom());
+            }
+
+            // 当页面已经在下半部分，而且鼠标不在内部滚动区上时
+            // 轻轻上滑也可以直接回顶
+            if (e.deltaY < -8 && isAtBottomSection() && postsList.scrollTop <= 0) {
+                const targetInsideList = postsList.matches(':hover');
+                if (!targetInsideList) {
+                    e.preventDefault();
+                    snapTo(0);
+                }
+            }
+        }, { passive: false });
+
+        // 下半部分内部滚动区：当它已经滚到顶部时，继续上滑 -> 吸回最顶上
+        postsList.addEventListener('wheel', (e) => {
+            const atInnerTop = postsList.scrollTop <= 0;
+
+            if (e.deltaY < -8 && atInnerTop && isAtBottomSection()) {
+                e.preventDefault();
+                snapTo(0);
+            }
+        }, { passive: false });
+
+        // ==============================================
+        // ✅ 移动端触摸支持
+        // ==============================================
+        let windowTouchStartY = 0;
+        let listTouchStartY = 0;
+
+        // 顶部区域：手指向上轻轻一划 -> 吸到底部
+        window.addEventListener('touchstart', (e) => {
+            if (!e.touches || !e.touches.length) return;
+            windowTouchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!e.touches || !e.touches.length) return;
+
+            const currentY = e.touches[0].clientY;
+            const delta = windowTouchStartY - currentY; // 正数 = 手指向上滑
+
+            if (delta > 18 && isAtTopSection()) {
+                e.preventDefault();
+                snapTo(getSnapBottom());
+            }
+        }, { passive: false });
+
+        // 内部滚动区：滚到顶部后，手指向下轻轻一划 -> 吸回顶部
+        postsList.addEventListener('touchstart', (e) => {
+            if (!e.touches || !e.touches.length) return;
+            listTouchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        postsList.addEventListener('touchmove', (e) => {
+            if (!e.touches || !e.touches.length) return;
+
+            const currentY = e.touches[0].clientY;
+            const delta = currentY - listTouchStartY; // 正数 = 手指向下滑
+            const atInnerTop = postsList.scrollTop <= 0;
+
+            if (delta > 18 && atInnerTop && isAtBottomSection()) {
+                e.preventDefault();
+                snapTo(0);
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
