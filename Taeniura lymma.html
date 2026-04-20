@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Jellyfish</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+        }
+
+        .bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        .main-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            width: 85%;
+            max-width: 900px;
+
+            padding: 40px;
+            border-radius: 25px;
+
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+
+            text-align: center;
+
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            font-size: 26px;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: #7fd8ff;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.7;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .fun-fact {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(127, 216, 255, 0.15);
+            border-left: 4px solid #7fd8ff;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 28px;
+
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+
+            backdrop-filter: blur(6px);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 36px;
+            }
+
+            p {
+                font-size: 15px;
+            }
+
+            .main-box {
+                padding: 25px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <video class="bg-video" autoplay muted loop playsinline>
+        <source src="../img/Taeniura lymma.mp4" type="video/mp4">
+    </video>
+
+    <div class="main-box">
+        <h1>Blue-spotted stingray</h1>
+
+        <h2>Description</h2>
+        <p>
+            The blue-spotted stingray (Taeniura lymma) inhabits shallow Indo-Pacific coral reefs and sandy lagoons. It is not considered endangered.
+        </p>
+
+        <h2>Fun Fact</h2>
+        <div class="fun-fact">
+            Its bright blue spots serve as a warning signal to potential predators.
+        </div>
+
+        <a href="javascript:history.back()" class="back-btn">← Back to Home</a>
+    </div>
+
+</body>
+</html>

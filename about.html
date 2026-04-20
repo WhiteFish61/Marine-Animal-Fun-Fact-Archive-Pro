@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        .center-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            width: 85%;
+            max-width: 900px;
+
+            padding: 50px;
+            border-radius: 25px;
+
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+
+            text-align: center;
+            color: white;
+
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        h1 {
+            font-size: 64px;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        p {
+            font-size: 20px;
+            line-height: 1.7;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 15px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 28px;
+
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+
+            backdrop-filter: blur(6px);
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 40px;
+            }
+
+            p {
+                font-size: 16px;
+            }
+
+            .center-box {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <video class="bg-video" autoplay muted loop playsinline>
+        <source src="img/Green seaweed.mp4" type="video/mp4">
+    </video>
+
+    <div class="center-box">
+
+        <h1>About The Designer</h1>
+
+        <p>
+            Hello! I'm the creator of this Marine Animal Fun Fact Archive.
+        </p>
+
+        <p>
+            This project combines my interest in ocean life with web design.
+            I wanted to create something visually engaging and interactive.
+        </p>
+
+        <p>
+            Through my design, I hope to make learning about marine animals more fun and immersive.
+        </p>
+
+        <p>
+            Thank you for visiting! May the ocean bring you peace!
+        </p>
+
+        <a href="index.html" class="back-btn">← Back to Home</a>
+
+    </div>
+
+</body>
+</html>
